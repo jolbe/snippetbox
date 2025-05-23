@@ -28,7 +28,22 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = ts.ExecuteTemplate(w, "base", nil)
+	snippets, err := app.snippets.Latest()
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	for _, snippet := range snippets {
+		app.infoLog.Printf("%+v\n", snippet)
+		// fmt.Fprintf(w, "%+v\n", snippet)
+	}
+
+	data := map[string]any{
+		"Snippets": snippets,
+	}
+
+	err = ts.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		app.serverError(w, err)
 	}
