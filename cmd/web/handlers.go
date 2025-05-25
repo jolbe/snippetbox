@@ -1,10 +1,13 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"html/template"
 	"net/http"
 	"strconv"
+
+	"snippetbox.gregor-pifko/internal/models"
 )
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
@@ -25,7 +28,22 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = ts.ExecuteTemplate(w, "base", nil)
+	snippets, err := app.snippets.Latest()
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	for _, snippet := range snippets {
+		app.infoLog.Printf("%+v\n", snippet)
+		// fmt.Fprintf(w, "%+v\n", snippet)
+	}
+
+	data := map[string]any{
+		"Snippets": snippets,
+	}
+
+	err = ts.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		app.serverError(w, err)
 	}
@@ -38,7 +56,17 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintf(w, "Display a specific snippet with id %d...", id)
+	snippet, err := app.snippets.Get(id)
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			app.notFound(w)
+		} else {
+			app.serverError(w, err)
+		}
+		return
+	}
+
+	fmt.Fprintf(w, "%+v", snippet)
 }
 
 func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
@@ -48,5 +76,25 @@ func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write([]byte("Create a new snippet..."))
+	err := r.ParseForm()
+	if err != nil {
+		app.serverError(w, err)
+	}
+
+	// Extract form values
+	title := r.FormValue("title")
+	content := r.FormValue("content")
+	expires, err := strconv.Atoi(r.FormValue("expires"))
+	if err != nil {
+		app.notFound(w)
+		return
+	}
+
+	id, err := app.snippets.Insert(title, content, expires)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	http.Redirect(w, r, fmt.Sprintf("/snippet/view?id=%d", id), http.StatusSeeOther)
 }
