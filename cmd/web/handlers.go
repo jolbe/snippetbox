@@ -34,13 +34,8 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, snippet := range snippets {
-		app.infoLog.Printf("%+v\n", snippet)
-		// fmt.Fprintf(w, "%+v\n", snippet)
-	}
-
-	data := map[string]any{
-		"Snippets": snippets,
+	data := &templateData{
+		Snippets: snippets,
 	}
 
 	err = ts.ExecuteTemplate(w, "base", data)
