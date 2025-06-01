@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 )
 
@@ -14,7 +13,5 @@ func secureHeaders(next http.Handler) http.Handler {
 		w.Header().Set("X-XSS-Protection", "0")
 
 		next.ServeHTTP(w, r)
-
-		fmt.Println("This is a simple merge conflict")
 	})
 }
