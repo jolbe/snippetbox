@@ -49,21 +49,24 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Create snippet form"))
+	data := app.newTemplateData(r)
+
+	app.render(w, http.StatusOK, "create.tmpl", data)
 }
 
 func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
-		app.serverError(w, err)
+		app.clientError(w, http.StatusBadRequest)
+		return
 	}
 
 	// Extract form values
-	title := r.FormValue("title")
-	content := r.FormValue("content")
-	expires, err := strconv.Atoi(r.FormValue("expires"))
+	title := r.PostForm.Get("title")
+	content := r.PostForm.Get("content")
+	expires, err := strconv.Atoi(r.PostForm.Get("expires"))
 	if err != nil {
-		app.notFound(w)
+		app.clientError(w, http.StatusBadRequest)
 		return
 	}
 
