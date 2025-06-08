@@ -4,6 +4,7 @@ go 1.22.4
 
 require (
 	github.com/go-sql-driver/mysql v1.9.2 // direct
+	github.com/julienschmidt/httprouter v1.3.0 // direct
 	github.com/justinas/alice v1.2.0 // direct
 )
 
