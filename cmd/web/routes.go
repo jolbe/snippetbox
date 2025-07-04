@@ -19,11 +19,15 @@ func (app *application) routes() http.Handler {
 	// Middleware for dynamic (session-enabled) routes
 	dynamic := alice.New(app.sessionManager.LoadAndSave)
 
+	// Snippet routes
 	router.Handler(http.MethodGet, "/", dynamic.ThenFunc(app.home))
 	router.Handler(http.MethodGet, "/snippet/view/:id", dynamic.ThenFunc(app.snippetView))
 	router.Handler(http.MethodGet, "/snippet/create", dynamic.ThenFunc(app.snippetCreate))
 	router.Handler(http.MethodPost, "/snippet/create", dynamic.ThenFunc(app.snippetCreatePost))
 
+	// User handling routes
+	router.Handler(http.MethodGet, "/user/signup", dynamic.ThenFunc(app.userSignup))
+	router.Handler(http.MethodPost, "/user/signup", dynamic.ThenFunc(app.userSignupPost))
 	// Common middleware (used by all routes)
 	standard := alice.New(app.recoverPanic, app.logRequest, secureHeaders)
 
