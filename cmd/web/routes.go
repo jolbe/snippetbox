@@ -28,6 +28,8 @@ func (app *application) routes() http.Handler {
 	// User handling routes
 	router.Handler(http.MethodGet, "/user/signup", dynamic.ThenFunc(app.userSignup))
 	router.Handler(http.MethodPost, "/user/signup", dynamic.ThenFunc(app.userSignupPost))
+	router.Handler(http.MethodGet, "/user/login", dynamic.ThenFunc(app.userLogin))
+	router.Handler(http.MethodPost, "/user/login", dynamic.ThenFunc(app.userLoginPost))
 	// Common middleware (used by all routes)
 	standard := alice.New(app.recoverPanic, app.logRequest, secureHeaders)
 

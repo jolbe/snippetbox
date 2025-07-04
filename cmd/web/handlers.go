@@ -166,3 +166,70 @@ func (app *application) userSignupPost(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
+type userLoginForm struct {
+	Email               string `form:"email"`
+	Password            string `form:"password"`
+	validator.Validator `form:"-"`
+}
+
+func (app *application) userLogin(w http.ResponseWriter, r *http.Request) {
+	data := app.newTemplateData(r)
+	data.Form = userLoginForm{}
+
+	app.render(w, http.StatusOK, "login.tmpl", data)
+}
+
+func (app *application) userLoginPost(w http.ResponseWriter, r *http.Request) {
+	var form userLoginForm
+
+	// Extract form values
+	err := app.decodePostForm(r, &form)
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	// Validate form
+	form.CheckField(validator.NotBlank(form.Email), "email", "This field cannot be blank")
+	form.CheckField(validator.Matches(form.Email, validator.SimpleEmailRX), "email", "Please provide valid email address")
+	form.CheckField(validator.NotBlank(form.Password), "password", "This field cannot be blank")
+
+	// Re-display login.tmpl if there are any form validation errors
+	if !form.Valid() {
+		data := app.newTemplateData(r)
+		data.Form = form
+		app.render(w, http.StatusUnprocessableEntity, "login.tmpl", data)
+		return
+	}
+
+	// Validate user can authenticate
+	uid, err := app.user.Authenticate(form.Email, form.Password)
+	if err != nil {
+		if errors.Is(err, models.ErrInvalidCredentials) {
+			form.AddNonFieldError("Your email address or password is wrong")
+
+			data := app.newTemplateData(r)
+			data.Form = form
+			app.render(w, http.StatusUnprocessableEntity, "login.tmpl", data)
+		} else {
+			app.serverError(w, err)
+		}
+		return
+	}
+
+	// User successfuly logged in so we need to renew session token
+	err = app.sessionManager.RenewToken(r.Context())
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	// Set authenticatedUserId in sessionManager
+	app.sessionManager.Put(r.Context(), "authenticatedUserID", uid)
+
+	// Set success flash message in session storage
+	app.sessionManager.Put(r.Context(), "flash", "User successfully logged in!")
+
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
