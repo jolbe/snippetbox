@@ -58,10 +58,15 @@ func (app *application) render(w http.ResponseWriter, status int, page string, d
 
 func (app *application) newTemplateData(r *http.Request) *templateData {
 	return &templateData{
-		Author:      "Gregor Pifko",
-		CurrentYear: time.Now().Year(),
-		Flash:       app.sessionManager.PopString(r.Context(), "flash"),
+		Author:              "Gregor Pifko",
+		CurrentYear:         time.Now().Year(),
+		Flash:               app.sessionManager.PopString(r.Context(), "flash"),
+		IsAuthenticatedUser: app.isAuthenticatedUser(r),
 	}
+}
+
+func (app *application) isAuthenticatedUser(r *http.Request) bool {
+	return app.sessionManager.Exists(r.Context(), "authenticatedUserID")
 }
 
 // dst is the target destination that we want to decode the form data into

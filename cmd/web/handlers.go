@@ -113,6 +113,11 @@ func (app *application) userSignup(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData(r)
 	data.Form = userSignupForm{}
 
+	// Redirect already logged in user to home page
+	if app.isAuthenticatedUser(r) {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	}
+
 	app.render(w, http.StatusOK, "signup.tmpl", data)
 }
 
@@ -175,6 +180,11 @@ type userLoginForm struct {
 func (app *application) userLogin(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData(r)
 	data.Form = userLoginForm{}
+
+	// Redirect already logged in user to home page
+	if app.isAuthenticatedUser(r) {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	}
 
 	app.render(w, http.StatusOK, "login.tmpl", data)
 }
