@@ -59,7 +59,7 @@ func (m *UserModel) Authenticate(email, password string) (int, error) {
 	// Get user from DB based on email
 	row := m.DB.QueryRow(query, email)
 	var user User
-	err := row.Scan(&user.Name, &user.Name, &user.Email, &user.HashedPassword, &user.Created)
+	err := row.Scan(&user.ID, &user.Name, &user.Email, &user.HashedPassword, &user.Created)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return 0, ErrInvalidCredentials
