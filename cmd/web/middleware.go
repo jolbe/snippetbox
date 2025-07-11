@@ -46,7 +46,7 @@ func (app *application) recoverPanic(next http.Handler) http.Handler {
 func (app *application) authenticate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// check session
-		userID := app.sessionManager.GetInt(r.Context(), "authenticatedUserID")
+		userID := app.sessionManager.GetInt(r.Context(), string(authenticatedUserIDSessionKey))
 		if userID == 0 {
 			next.ServeHTTP(w, r)
 			return

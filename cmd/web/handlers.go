@@ -97,7 +97,7 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 	}
 
 	// Set success flash message to session storage
-	app.sessionManager.Put(r.Context(), "flash", "Your snippet was saved successfully!")
+	app.sessionManager.Put(r.Context(), string(flashSessionKey), "Your snippet was saved successfully!")
 
 	http.Redirect(w, r, fmt.Sprintf("/snippet/view/%d", id), http.StatusSeeOther)
 }
@@ -163,10 +163,10 @@ func (app *application) userSignupPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Set authenticatedUserId in sessionManager
-	app.sessionManager.Put(r.Context(), "authenticatedUserID", uid)
+	app.sessionManager.Put(r.Context(), string(authenticatedUserIDSessionKey), uid)
 
 	// Set success flash message in session storage
-	app.sessionManager.Put(r.Context(), "flash", "User successfully created and logged in!")
+	app.sessionManager.Put(r.Context(), string(flashSessionKey), "User successfully created and logged in!")
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
@@ -235,10 +235,10 @@ func (app *application) userLoginPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Set authenticatedUserId in sessionManager
-	app.sessionManager.Put(r.Context(), "authenticatedUserID", uid)
+	app.sessionManager.Put(r.Context(), string(authenticatedUserIDSessionKey), uid)
 
 	// Set success flash message in session storage
-	app.sessionManager.Put(r.Context(), "flash", "User successfully logged in!")
+	app.sessionManager.Put(r.Context(), string(flashSessionKey), "User successfully logged in!")
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
@@ -252,9 +252,9 @@ func (app *application) userLogoutPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// log out the user by removing the authenticatedUserID from session
-	app.sessionManager.Remove(r.Context(), "authenticatedUserID")
+	app.sessionManager.Remove(r.Context(), string(authenticatedUserIDSessionKey))
 
-	app.sessionManager.Put(r.Context(), "flash", "User successfully logged out!")
+	app.sessionManager.Put(r.Context(), string(flashSessionKey), "User successfully logged out!")
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }

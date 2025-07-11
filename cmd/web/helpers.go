@@ -61,7 +61,7 @@ func (app *application) newTemplateData(r *http.Request) *templateData {
 	return &templateData{
 		Author:              "Gregor Pifko",
 		CurrentYear:         time.Now().Year(),
-		Flash:               app.sessionManager.PopString(r.Context(), "flash"),
+		Flash:               app.sessionManager.PopString(r.Context(), string(flashSessionKey)),
 		IsAuthenticatedUser: app.isAuthenticatedUser(r),
 		CSRFToken:           nosurf.Token(r),
 	}
