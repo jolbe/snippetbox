@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -38,6 +39,32 @@ func (app *application) recoverPanic(next http.Handler) http.Handler {
 		}()
 
 		// Code that may panic
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (app *application) authenticate(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// check session
+		userID := app.sessionManager.GetInt(r.Context(), "authenticatedUserID")
+		if userID == 0 {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		// userID indicates authentication; verify user exists in the DB
+		exists, err := app.user.Exists(userID)
+		if err != nil {
+			app.serverError(w, err)
+			return
+		}
+
+		// autheticated user; set isAuthenticatedUser flag in context
+		if exists {
+			ctx := context.WithValue(r.Context(), isAuthenticatedContextKey, true)
+			r = r.WithContext(ctx)
+		}
+
 		next.ServeHTTP(w, r)
 	})
 }

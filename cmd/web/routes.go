@@ -17,7 +17,7 @@ func (app *application) routes() http.Handler {
 	router.ServeFiles("/static/*filepath", http.Dir("./ui/static/"))
 
 	// Middleware for dynamic (session-enabled) routes
-	dynamic := alice.New(app.sessionManager.LoadAndSave, noSurf)
+	dynamic := alice.New(app.sessionManager.LoadAndSave, noSurf, app.authenticate)
 
 	// Middleware for authorized (logged in) routes
 	protected := dynamic.Append(app.requireAuthentication)

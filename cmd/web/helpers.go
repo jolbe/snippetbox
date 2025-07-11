@@ -68,7 +68,11 @@ func (app *application) newTemplateData(r *http.Request) *templateData {
 }
 
 func (app *application) isAuthenticatedUser(r *http.Request) bool {
-	return app.sessionManager.Exists(r.Context(), "authenticatedUserID")
+	isAuthenticated, ok := r.Context().Value(isAuthenticatedContextKey).(bool)
+	if !ok {
+		return false
+	}
+	return isAuthenticated
 }
 
 // dst is the target destination that we want to decode the form data into
