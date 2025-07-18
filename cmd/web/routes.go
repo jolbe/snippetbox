@@ -1,10 +1,12 @@
 package main
 
 import (
+	"io/fs"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/justinas/alice"
+	"snippetbox.gregor-pifko/ui"
 )
 
 func (app *application) routes() http.Handler {
@@ -14,7 +16,9 @@ func (app *application) routes() http.Handler {
 		app.notFound(w)
 	})
 
-	router.ServeFiles("/static/*filepath", http.Dir("./ui/static/"))
+	// Static resources file server
+	staticFS, _ := fs.Sub(ui.Files, "static")
+	router.ServeFiles("/static/*filepath", http.FS(staticFS))
 
 	// Middleware for dynamic (session-enabled) routes
 	dynamic := alice.New(app.sessionManager.LoadAndSave, noSurf, app.authenticate)
