@@ -1,3 +1,4 @@
 tmp/
 tls/
 .air.toml
+.zed/
