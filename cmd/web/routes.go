@@ -26,6 +26,9 @@ func (app *application) routes() http.Handler {
 	// Middleware for authorized (logged in) routes
 	protected := dynamic.Append(app.requireAuthentication)
 
+	// Ping route for status-checking or uptime monitoring of server
+	router.HandlerFunc(http.MethodGet, "/ping", ping)
+
 	// Unprotected routes
 	router.Handler(http.MethodGet, "/", dynamic.ThenFunc(app.home))
 	router.Handler(http.MethodGet, "/snippet/view/:id", dynamic.ThenFunc(app.snippetView))
