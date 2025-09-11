@@ -8,13 +8,27 @@ import (
 	"net/http/cookiejar"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/alexedwards/scs/v2"
+	"github.com/go-playground/form/v4"
+	"snippetbox.gregor-pifko/internal/models/mocks"
 )
 
 // Return an instance of our application struct containing mocked dependencies
 func newTestApplication(t *testing.T) *application {
+	templateCache, err := newTemplateCache()
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	return &application{
-		infoLog:  log.New(io.Discard, "", 0),
-		errorLog: log.New(io.Discard, "", 0),
+		infoLog:        log.New(io.Discard, "", 0),
+		errorLog:       log.New(io.Discard, "", 0),
+		snippets:       &mocks.SnippetModel{},
+		user:           &mocks.UserModel{},
+		templateCache:  templateCache,
+		formDecoder:    form.NewDecoder(),
+		sessionManager: scs.New(),
 	}
 }
 
