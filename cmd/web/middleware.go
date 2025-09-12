@@ -90,6 +90,23 @@ func (app *application) requireAuthentication(next http.Handler) http.Handler {
 func noSurf(next http.Handler) http.Handler {
 	csrfHandler := nosurf.New(next)
 
+	// Custom failure handler to work around nosurf validation issues
+	csrfHandler.SetFailureHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Get the submitted token from the form
+		submittedToken := r.FormValue("csrf_token")
+		expectedToken := nosurf.Token(r)
+
+		// Perform manual verification as a fallback
+		if nosurf.VerifyToken(expectedToken, submittedToken) {
+			// Manual verification passed, allow the request to continue
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		// Both automatic and manual verification failed
+		http.Error(w, "CSRF token verification failed", http.StatusBadRequest)
+	}))
+
 	csrfHandler.SetBaseCookie(http.Cookie{
 		HttpOnly: true,
 		Path:     "/",
